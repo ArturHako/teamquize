@@ -72,6 +72,14 @@
 			opacity: 0.9;
 			transform: translate(-50%, 0) scale(1);
 		}
+		.tree-star-hotspot.needs-audio {
+			box-shadow: 0 0 45px rgba(255, 215, 0, 0.85);
+			animation: star-pulse 1s ease-in-out infinite alternate;
+		}
+		@keyframes star-pulse {
+			from { transform: translate(-50%, -50%) scale(1); }
+			to { transform: translate(-50%, -50%) scale(1.08); }
+		}
 		.progress {
 			position: absolute;
 			top: clamp(18px, 1vw, 46px);
@@ -197,6 +205,22 @@
 			from { transform: rotate(-12deg); }
 			to { transform: rotate(14deg); }
 		}
+		.audio-toggle {
+			position: fixed;
+			right: clamp(16px, 4vw, 32px);
+			bottom: clamp(16px, 4vw, 32px);
+			padding: 0.75rem 1.5rem;
+			border: none;
+			border-radius: 999px;
+			font-weight: 600;
+			color: #041123;
+			background: rgba(255, 255, 255, 0.85);
+			box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+			cursor: pointer;
+		}
+		.audio-toggle[hidden] {
+			display: none;
+		}
 	</style>
 </head>
 <body>
@@ -213,6 +237,15 @@
 			</div>
 		</div>
 	</div>
+	<audio id="bg-audio" preload="auto">
+		<source src="./songs/song1.mp3" type="audio/mpeg" />
+        <source src="./songs/song2.mp3" type="audio/mpeg" />
+        <source src="./songs/song3.mp3" type="audio/mpeg" />
+        <source src="./songs/song4.mp3" type="audio/mpeg" />
+        <source src="./songs/song5.mp3" type="audio/mpeg" />
+        <source src="./songs/song6.mp3" type="audio/mpeg" />
+        <source src="./songs/song7.mp3" type="audio/mpeg" />
+	</audio>
 	<script>
 		const scene = document.querySelector(".scene");
 		const img = document.querySelector(".scene__bg");
@@ -221,6 +254,8 @@
 		const fill = document.querySelector(".progress__fill");
 		const runners = document.querySelectorAll(".progress__runner");
 		const progressLabel = document.querySelector(".progress__meta strong");
+		const audioPlayer = document.getElementById("bg-audio");
+		const AUDIO_PROMPT_CLASS = "needs-audio";
 		const PROGRESS_RATIO = 0;
 		const STAR_X = 0.735;
 		const STAR_Y = 0.225;
@@ -261,6 +296,44 @@
 			if (progressLabel) progressLabel.textContent = `${Math.round(PROGRESS_RATIO * 100)}%`;
 		};
 
+		const getAvailableTracks = () => {
+			if (!audioPlayer) return [];
+			const playlistData = audioPlayer.dataset.playlist;
+			if (playlistData) {
+				try {
+					const parsed = JSON.parse(playlistData);
+					if (Array.isArray(parsed) && parsed.length) return parsed.filter(Boolean);
+				} catch (error) {
+					console.warn("Invalid playlist data:", error);
+				}
+			}
+			return Array.from(audioPlayer.querySelectorAll("source"))
+				.map((source) => source.getAttribute("src"))
+				.filter(Boolean);
+		};
+
+		const playRandomSong = (forceNewTrack = false) => {
+			if (!audioPlayer) return;
+			const playlist = getAvailableTracks();
+			if (!playlist.length) return;
+			if (!audioPlayer.getAttribute("src") || forceNewTrack) {
+				const randomTrack = playlist[Math.floor(Math.random() * playlist.length)];
+				audioPlayer.src = randomTrack;
+			}
+			audioPlayer.currentTime = 0;
+			audioPlayer.play()
+				.then(() => {
+					audioPlayer.removeAttribute("controls");
+					star?.classList.remove(AUDIO_PROMPT_CLASS);
+				})
+				.catch(() => {
+					audioPlayer.setAttribute("controls", "controls");
+					star?.classList.add(AUDIO_PROMPT_CLASS);
+				});
+		};
+
+		star?.addEventListener("click", () => playRandomSong(true));
+
 		const initializeScene = () => {
 			updateStarPosition();
 			updateProgressVisuals();
@@ -273,6 +346,7 @@
 		}
 
 		window.addEventListener("resize", initializeScene);
+		window.addEventListener("load", () => playRandomSong());
 	</script>
 </body>
 </html>
