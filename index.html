@@ -221,6 +221,109 @@
 		.audio-toggle[hidden] {
 			display: none;
 		}
+		#bg-audio {
+			position: fixed;
+			width: 1px;
+			height: 1px;
+			opacity: 0;
+			pointer-events: none;
+		}
+		.countdown {
+			position: fixed;
+			left: 50%;
+			bottom: clamp(16px, 2vh, 64px);
+			transform: translateX(-50%);
+			width: min(360px, 78vw);
+			padding: clamp(0.75rem, 1.5vw, 1.1rem) clamp(1rem, 3vw, 2rem);
+			border-radius: clamp(20px, 4vw, 30px);
+			background: rgba(8, 20, 46, 0.78);
+			backdrop-filter: blur(12px);
+			border: 3px solid rgba(255, 255, 255, 0.15);
+			box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), 0 0 38px rgba(255, 215, 0, 0.28);
+			display: flex;
+			justify-content: center;
+			z-index: 2;
+		}
+		.countdown::before {
+			content: "";
+			position: absolute;
+			inset: 22%;
+			border-radius: inherit;
+			background: radial-gradient(circle, rgba(255, 255, 255, 0.25), transparent 65%);
+			filter: blur(9px);
+			pointer-events: none;
+		}
+		.countdown__timer {
+			display: flex;
+			align-items: center;
+			font-family: "Aldrich", "Segoe UI", system-ui, sans-serif;
+			gap: clamp(0.35rem, 1.5vw, 1rem);
+		}
+		.countdown__value {
+			font-size: clamp(2rem, 6vw, 3.25rem);
+			font-weight: 600;
+			line-height: 1;
+			background: linear-gradient(120deg, #fff6a9, #ffd66d, #fff);
+			-webkit-background-clip: text;
+			color: transparent;
+			text-shadow: 0 0 14px rgba(255, 196, 53, 0.75);
+			animation: countdown-shimmer 4s linear infinite;
+			min-width: 2ch;
+			text-align: center;
+		}
+		.countdown__separator {
+			font-size: clamp(1.5rem, 4vw, 3rem);
+			color: rgba(255, 255, 255, 0.55);
+			animation: countdown-glow 1.2s ease-in-out infinite alternate;
+		}
+		.countdown--arrived {
+			background: linear-gradient(120deg, rgba(255, 196, 53, 0.9), rgba(255, 115, 92, 0.9));
+			box-shadow: 0 20px 55px rgba(0, 0, 0, 0.5), 0 0 65px rgba(255, 255, 255, 0.5);
+		}
+		@keyframes star-pulse {
+			from { transform: translate(-50%, -50%) scale(1); }
+			to { transform: translate(-50%, -50%) scale(1.08); }
+		}
+		@keyframes snow-fall {
+			from { background-position: 0 0, 0 0, 0 0; }
+			to { background-position: 0 320px, 0 480px, 0 640px; }
+		}
+		@keyframes snow-drift {
+			from { transform: translateX(-25px); }
+			to { transform: translateX(25px); }
+		}
+		@keyframes snow-glow {
+			from {
+				transform: translateY(0);
+			}
+			to {
+				transform: translateY(14px);
+			}
+		}
+		@keyframes runner-bob {
+			from { transform: translateY(0); }
+			to { transform: translateY(-4px); }
+		}
+		@keyframes runner-steps {
+			from { transform: translate(-50%, 0) skewX(-6deg); }
+			to { transform: translate(-50%, 2px) skewX(6deg); }
+		}
+		@keyframes runner-move {
+			from { transform: translateY(-50%) translateX(-18px); }
+			to { transform: translateY(-50%) translateX(var(--runner-end-x)); }
+		}
+		@keyframes limb-swing {
+			from { transform: rotate(-12deg); }
+			to { transform: rotate(14deg); }
+		}
+		@keyframes countdown-shimmer {
+			0% { background-position: 0% 50%; }
+			100% { background-position: 200% 50%; }
+		}
+		@keyframes countdown-glow {
+			from { opacity: 0.4; }
+			to { opacity: 1; }
+		}
 	</style>
 </head>
 <body>
@@ -235,6 +338,15 @@
 					<img src="./runner.gif" alt="Runner" loading="lazy" />
 				</span>
 			</div>
+		</div>
+	</div>
+	<div class="countdown" role="timer" aria-label="Countdown to January 1, 2026">
+		<div class="countdown__timer" aria-live="polite">
+			<span class="countdown__value" data-part="hours">00</span>
+			<span class="countdown__separator">:</span>
+			<span class="countdown__value" data-part="minutes">00</span>
+			<span class="countdown__separator">:</span>
+			<span class="countdown__value" data-part="seconds">00</span>
 		</div>
 	</div>
 	<audio id="bg-audio" preload="auto">
@@ -261,6 +373,14 @@
 		const STAR_Y = 0.225;
 		const RUNNER_RESET = -18;
 		const RUNNER_AHEAD_OFFSET = 20;
+		const TARGET_DATE = Date.UTC(2025, 11, 31, 20, 0, 0, 0);
+		const countdownRefs = {
+			wrapper: document.querySelector(".countdown"),
+			hours: document.querySelector('[data-part="hours"]'),
+			minutes: document.querySelector('[data-part="minutes"]'),
+			seconds: document.querySelector('[data-part="seconds"]')
+		};
+		const formatTimeUnit = (value) => String(value).padStart(2, "0");
 
 		const updateStarPosition = () => {
 			if (!scene || !img || !star) return;
@@ -339,6 +459,26 @@
 			updateProgressVisuals();
 		};
 
+		const updateCountdownTimer = () => {
+			if (!countdownRefs.wrapper) return true;
+			const diffSeconds = Math.max(0, Math.floor((TARGET_DATE - Date.now()) / 1000));
+			const totalHours = Math.floor(diffSeconds / 3600);
+			const minutes = Math.floor((diffSeconds % 3600) / 60);
+			const seconds = diffSeconds % 60;
+
+			countdownRefs.hours.textContent = formatTimeUnit(totalHours);
+			countdownRefs.minutes.textContent = formatTimeUnit(minutes);
+			countdownRefs.seconds.textContent = formatTimeUnit(seconds);
+
+			if (diffSeconds === 0) {
+				countdownRefs.wrapper.classList.add("countdown--arrived");
+				return true;
+			}
+
+			countdownRefs.wrapper.classList.remove("countdown--arrived");
+			return false;
+		};
+
 		if (img.complete) {
 			initializeScene();
 		} else {
@@ -347,6 +487,11 @@
 
 		window.addEventListener("resize", initializeScene);
 		window.addEventListener("load", () => playRandomSong());
+
+		updateCountdownTimer();
+		const countdownInterval = setInterval(() => {
+			if (updateCountdownTimer()) clearInterval(countdownInterval);
+		}, 1000);
 	</script>
 </body>
 </html>
