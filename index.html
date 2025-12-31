@@ -83,6 +83,26 @@
 			width: var(--toy-size, clamp(60px, 8vw, 110px));
 			will-change: transform;
 			isolation: isolate;
+			z-index: 0;
+			--toy-glow-color-rgb: 255, 240, 184;
+			--toy-glow-color-mid-rgb: 255, 159, 75;
+			--toy-glow-strength: 0.45;
+		}
+		.tree-toy__glow {
+			position: absolute;
+			top: 45%;
+			left: 50%;
+			width: 165%;
+			aspect-ratio: 1;
+			transform: translate(-50%, -50%);
+			border-radius: 50%;
+			background: radial-gradient(circle, rgba(var(--toy-glow-color-rgb), 0.9) 0%, rgba(var(--toy-glow-color-mid-rgb), 0.35) 35%, transparent 70%);
+			filter: blur(14px);
+			opacity: var(--toy-glow-strength);
+			mix-blend-mode: screen;
+			pointer-events: none;
+			animation: toy-glow 3.2s ease-in-out infinite alternate;
+			z-index: -1;
 		}
 		.tree-toy::before {
 			content: attr(data-hover-text);
@@ -105,28 +125,15 @@
 			white-space: normal;
 			width: 320px;
 			text-align: center;
+			z-index: 2;
+		}
+		.tree-toy:is(:hover, :focus-visible) {
+			z-index: 5;
 		}
 		.tree-toy:is(:hover, :focus-visible)::before {
 			opacity: 1;
 			transform: translate(-50%, -10%) scale(1);
 			animation: toy-toast-pop 0.4s ease forwards;
-		}
-		.tree-toy::after {
-			content: "";
-			position: absolute;
-			top: 45%;
-			left: 50%;
-			width: 165%;
-			aspect-ratio: 1;
-			transform: translate(-50%, -50%);
-			border-radius: 50%;
-			background: radial-gradient(circle, rgba(255, 240, 184, 0.9) 0%, rgba(255, 159, 75, 0.35) 35%, transparent 70%);
-			filter: blur(14px);
-			opacity: 0.45;
-			mix-blend-mode: screen;
-			pointer-events: none;
-			animation: toy-glow 3.2s ease-in-out infinite alternate;
-			z-index: -1;
 		}
 		.tree-toy img {
 			display: block;
@@ -145,14 +152,8 @@
 			to { transform: translate(-50%, -50%) scale(1.08); }
 		}
 		@keyframes toy-glow {
-			from {
-				opacity: 0.35;
-				transform: translate(-50%, -50%) scale(0.85);
-			}
-			to {
-				opacity: 0.55;
-				transform: translate(-50%, -50%) scale(1);
-			}
+			from { filter: blur(12px); }
+			to { filter: blur(18px); }
 		}
 		@keyframes toy-toast-pop {
 			from { filter: blur(4px); opacity: 0; transform: translate(-50%, 20%) scale(0.9); }
@@ -373,14 +374,33 @@
 	<div class="scene">
 		<img class="scene__bg" src="./0done.jpg" alt="Festive scene with a Christmas tree" />
 		<button class="tree-star-hotspot" type="button" aria-label="Այս տարի միասնական ուժերով կվառենք տոնածառի լույսերը"></button>
-		<div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Թող որ գալիք տարում լինենք առավել հետաքրքրասեր, այն ապահովում է շարունակական զարգացում 🎄" data-x="0.35" data-y="0.8" data-size-ratio="0.08">
+		<div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Թող որ գալիք տարում լինենք առավել հետաքրքրասեր, այն ապահովում է շարունակական զարգացում 🎄" data-x="0.35" data-y="0.78" data-size-ratio="0.08" data-glow-color="#ffd97d" data-glow-intensity="0.8">
+			<span class="tree-toy__glow" aria-hidden="true"></span>
 			<img src="./toys/mane.png" alt="Glass tree ornament" loading="lazy" />
 		</div>
-        <div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Թող 2026 թվականը լինի նոր հնարավորությունների, անսպառ էներգիայի և մեծ ձեռքբերումների տարի ❤️✨️" data-x="0.5" data-y="0.5" data-size-ratio="0.08">
+        <div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Թող 2026 թվականը լինի նոր հնարավորությունների, անսպառ էներգիայի և մեծ ձեռքբերումների տարի ❤️✨️" data-x="0.5" data-y="0.5" data-size-ratio="0.08" data-glow-color="#ffffff" data-glow-intensity="0.8">
+            <span class="tree-toy__glow" aria-hidden="true"></span>
             <img src="./toys/sofi.png" alt="Glass tree ornament" loading="lazy" />
         </div>
-        <div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Ցանկանում եմ 2026-ը լինի խաղաղության, երջանկության և առողջության տարի💚" data-x="0.4" data-y="0.6" data-size-ratio="0.08">
+        <div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Ցանկանում եմ 2026-ը լինի խաղաղության, երջանկության և առողջության տարի💚" data-x="0.4" data-y="0.6" data-size-ratio="0.08" data-glow-color="#39d0ff" data-glow-intensity="0.8">
+            <span class="tree-toy__glow" aria-hidden="true"></span>
             <img src="./toys/valodya.png" alt="Glass tree ornament" loading="lazy" />
+        </div>
+        <div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Նոր տարին թող լինի այն կետը, որտեղ գաղափարները դառնում են գործ,ձայնը՝ ազդեցություն,իսկ երիտասարդությունը՝ իրական փոփոխության ուժ։" data-x="0.6" data-y="0.7" data-size-ratio="0.08" data-glow-color="#7fe067" data-glow-intensity="0.8">
+            <span class="tree-toy__glow" aria-hidden="true"></span>
+            <img src="./toys/sveta.png" alt="Glass tree ornament" loading="lazy" />
+        </div>
+        <div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Թող որ մյուս տարի բոլոր ջոկատները Խաղայնացման ջոկատի պես լավ աշխատեն 😉😜" data-x="0.57" data-y="0.57" data-size-ratio="0.065" data-glow-color="#ff8bdc" data-glow-intensity="0.8">
+            <span class="tree-toy__glow" aria-hidden="true"></span>
+            <img src="./toys/artur.png" alt="Glass tree ornament" loading="lazy" />
+        </div>
+        <div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Թող 2025 թվականը լինի բոլորիս ձախողումների վերջին տարին ✨" data-x="0.42" data-y="0.45" data-size-ratio="0.067" data-glow-color="#ffa64d" data-glow-intensity="0.8">
+            <span class="tree-toy__glow" aria-hidden="true"></span>
+            <img src="./toys/hamo.png" alt="Glass tree ornament" loading="lazy" />
+        </div>
+        <div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Թող մյուս տարի մարդիկ չփոշմանեն իրենց որոշումների համար" data-x="0.5" data-y="0.67" data-size-ratio="0.08" data-glow-color="#998b8e" data-glow-intensity="0.8">
+            <span class="tree-toy__glow" aria-hidden="true"></span>
+            <img src="./toys/erik.png" alt="Glass tree ornament" loading="lazy" />
         </div>
 		<div class="progress" aria-live="polite">
 			<div class="progress__track">
@@ -422,13 +442,15 @@
 		const progressLabel = document.querySelector(".progress__meta strong");
 		const audioPlayer = document.getElementById("bg-audio");
 		const AUDIO_PROMPT_CLASS = "needs-audio";
-		const PROGRESS_RATIO = 0.24;
+		const PROGRESS_RATIO = 0.58;
 		const RUNNER_RESET = -18;
 		const RUNNER_AHEAD_OFFSET = 20;
 		const STAR_X = 0.735;
 		const STAR_Y = 0.225;
 		const DEFAULT_TOY_RATIO = 0.08;
 		const toyWidthRatios = new WeakMap();
+		const MIN_GLOW_INTENSITY = 0.15;
+		const MAX_GLOW_INTENSITY = 0.85;
 		const TARGET_DATE = Date.UTC(2025, 11, 31, 20, 0, 0, 0);
 		const countdownRefs = {
 			wrapper: document.querySelector(".countdown"),
@@ -474,9 +496,40 @@
 				}
 
 				toy.style.setProperty("--toy-size", `${displayWidth * (ratio || DEFAULT_TOY_RATIO)}px`);
+				applyToyGlowCustomization(toy);
 			});
 		};
-
+		const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+		const hexToRgb = (hex) => {
+			const normalized = hex?.trim().replace(/^#/, "");
+			if (!normalized || !/^[0-9a-f]{3}([0-9a-f]{3})?$/i.test(normalized)) return null;
+			const full = normalized.length === 3 ? normalized.replace(/./g, (ch) => ch + ch) : normalized;
+			const intVal = Number.parseInt(full, 16);
+			return { r: (intVal >> 16) & 255, g: (intVal >> 8) & 255, b: intVal & 255 };
+		};
+		const mixChannel = (channel, target, factor) => Math.round(channel + (target - channel) * factor);
+		const lighten = (rgb, factor = 0.35) => ({
+			r: mixChannel(rgb.r, 255, factor),
+			g: mixChannel(rgb.g, 255, factor),
+			b: mixChannel(rgb.b, 255, factor)
+		});
+		const darken = (rgb, factor = 0.15) => ({
+			r: mixChannel(rgb.r, 0, factor),
+			g: mixChannel(rgb.g, 0, factor),
+			b: mixChannel(rgb.b, 0, factor)
+		});
+		const formatRgb = (rgb) => `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+		const applyToyGlowCustomization = (toy) => {
+			const baseColor = hexToRgb(toy.dataset.glowColor ?? "");
+			if (baseColor) {
+				toy.style.setProperty("--toy-glow-color-rgb", formatRgb(lighten(baseColor)));
+				toy.style.setProperty("--toy-glow-color-mid-rgb", formatRgb(darken(baseColor, 0.1)));
+			}
+			const intensity = Number.parseFloat(toy.dataset.glowIntensity ?? "");
+			if (Number.isFinite(intensity)) {
+				toy.style.setProperty("--toy-glow-strength", clamp(intensity, MIN_GLOW_INTENSITY, MAX_GLOW_INTENSITY));
+			}
+		};
 		const updateProgressVisuals = () => {
 			if (!track || !fill || !runners.length) return;
 			const runner = runners[0];
@@ -536,50 +589,56 @@
 		const attachToyHoverEffects = () => {
 			toys.forEach((toy) => {
 				const toySprite = toy.querySelector("img");
-				if (!toySprite || typeof toySprite.animate !== "function") return;
+				const toyGlow = toy.querySelector(".tree-toy__glow");
+				const swingTargets = [toySprite, toyGlow].filter((node) => node && typeof node.animate === "function");
+				if (!swingTargets.length) return;
 
-				let toySwingAnimation;
+				let toySwingAnimations;
 				let toyRateTweenHandle;
 
 				const ensureToySwing = () => {
-					if (!toySwingAnimation) {
-						toySwingAnimation = toySprite.animate(
-							[
-								{ transform: "rotate(-6deg)" },
-								{ transform: "rotate(6deg)" }
-							],
-							{
+					if (!toySwingAnimations) {
+						toySwingAnimations = swingTargets.map((target) => {
+							const frames = target === toyGlow
+								? [
+										{ transform: "translate(-50%, -50%) rotate(-6deg)" },
+										{ transform: "translate(-50%, -50%) rotate(6deg)" }
+									]
+								: [
+										{ transform: "rotate(-6deg)" },
+										{ transform: "rotate(6deg)" }
+									];
+							return target.animate(frames, {
 								duration: 2000,
 								direction: "alternate",
 								easing: "ease-in-out",
 								iterations: Infinity,
 								fill: "both"
-							}
-						);
+							});
+						});
 					}
-					return toySwingAnimation;
+					return toySwingAnimations;
 				};
 
-				ensureToySwing();
-
 				const tweenToyRate = (targetRate = 1) => {
-					const animation = ensureToySwing();
-					if (!animation) return;
+					const animations = ensureToySwing() ?? [];
+					if (!animations.length) return;
 					if (toyRateTweenHandle) cancelAnimationFrame(toyRateTweenHandle);
 
-					const startRate = animation.playbackRate || 1;
+					const startRate = animations[0].playbackRate || 1;
 					const startTime = performance.now();
 					const duration = 260;
 
 					const tick = (now) => {
 						const progress = Math.min(1, (now - startTime) / duration);
 						const eased = progress * (2 - progress);
-						animation.playbackRate = startRate + (targetRate - startRate) * eased;
+						const nextRate = startRate + (targetRate - startRate) * eased;
+						animations.forEach((animation) => (animation.playbackRate = nextRate));
 
 						if (progress < 1) {
 							toyRateTweenHandle = requestAnimationFrame(tick);
 						} else {
-							animation.playbackRate = targetRate;
+							animations.forEach((animation) => (animation.playbackRate = targetRate));
 							toyRateTweenHandle = null;
 						}
 					};
@@ -587,6 +646,7 @@
 					toyRateTweenHandle = requestAnimationFrame(tick);
 				};
 
+				ensureToySwing();
 				toy.addEventListener("pointerenter", () => tweenToyRate(2.1));
 				toy.addEventListener("pointerleave", () => tweenToyRate(1));
 			});
