@@ -73,12 +73,90 @@
 			transform: translate(-50%, 0) scale(1);
 		}
 		.tree-star-hotspot.needs-audio {
-			box-shadow: 0 0 45px rgba(255, 215, 0, 0.85);
 			animation: star-pulse 1s ease-in-out infinite alternate;
+		}
+		.tree-toy {
+			position: absolute;
+			top: var(--toy-top, 80%);
+			left: var(--toy-left, 35%);
+			transform: translate(-50%, -50%);
+			width: var(--toy-size, clamp(60px, 8vw, 110px));
+			will-change: transform;
+			isolation: isolate;
+		}
+        .tree-toy::before {
+            content: "Թող որ գալիք տարում լինենք առավել հետաքրքրասեր, այն ապահովում է շարունակական զարգացում 🎄";
+            position: absolute;
+            bottom: 80%;
+            left: 50%;
+            transform: translate(-50%, 10%) scale(0.95);
+            padding: 0.45rem 0.9rem;
+            border-radius: 9px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 215, 150, 0.85));
+            color: #1a2750;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(6px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            white-space: normal;
+            width: 320px;
+            text-align: center;
+        }
+		.tree-toy:is(:hover, :focus-visible)::before {
+			opacity: 1;
+			transform: translate(-50%, -10%) scale(1);
+			animation: toy-toast-pop 0.4s ease forwards;
+		}
+		.tree-toy::after {
+			content: "";
+			position: absolute;
+			top: 45%;
+			left: 50%;
+			width: 165%;
+			aspect-ratio: 1;
+			transform: translate(-50%, -50%);
+			border-radius: 50%;
+			background: radial-gradient(circle, rgba(255, 240, 184, 0.9) 0%, rgba(255, 159, 75, 0.35) 35%, transparent 70%);
+			filter: blur(14px);
+			opacity: 0.45;
+			mix-blend-mode: screen;
+			pointer-events: none;
+			animation: toy-glow 3.2s ease-in-out infinite alternate;
+			z-index: -1;
+		}
+		.tree-toy img {
+			display: block;
+			width: 100%;
+			height: auto;
+			transform-origin: top center;
+			filter: brightness(var(--toy-brightness, 1)) drop-shadow(0 30px 12px rgba(0, 0, 0, 0.45));
+			transition: filter 0.25s ease;
+			pointer-events: none;
+		}
+		.tree-toy:is(:hover, :focus-visible) img {
+			--toy-brightness: 1.55;
 		}
 		@keyframes star-pulse {
 			from { transform: translate(-50%, -50%) scale(1); }
 			to { transform: translate(-50%, -50%) scale(1.08); }
+		}
+		@keyframes toy-glow {
+			from {
+				opacity: 0.35;
+				transform: translate(-50%, -50%) scale(0.85);
+			}
+			to {
+				opacity: 0.55;
+				transform: translate(-50%, -50%) scale(1);
+			}
+		}
+		@keyframes toy-toast-pop {
+			from { filter: blur(4px); opacity: 0; transform: translate(-50%, 20%) scale(0.9); }
+			to { filter: blur(0); opacity: 1; transform: translate(-50%, -10%) scale(1); }
 		}
 		.progress {
 			position: absolute;
@@ -280,42 +358,6 @@
 			background: linear-gradient(120deg, rgba(255, 196, 53, 0.9), rgba(255, 115, 92, 0.9));
 			box-shadow: 0 20px 55px rgba(0, 0, 0, 0.5), 0 0 65px rgba(255, 255, 255, 0.5);
 		}
-		@keyframes star-pulse {
-			from { transform: translate(-50%, -50%) scale(1); }
-			to { transform: translate(-50%, -50%) scale(1.08); }
-		}
-		@keyframes snow-fall {
-			from { background-position: 0 0, 0 0, 0 0; }
-			to { background-position: 0 320px, 0 480px, 0 640px; }
-		}
-		@keyframes snow-drift {
-			from { transform: translateX(-25px); }
-			to { transform: translateX(25px); }
-		}
-		@keyframes snow-glow {
-			from {
-				transform: translateY(0);
-			}
-			to {
-				transform: translateY(14px);
-			}
-		}
-		@keyframes runner-bob {
-			from { transform: translateY(0); }
-			to { transform: translateY(-4px); }
-		}
-		@keyframes runner-steps {
-			from { transform: translate(-50%, 0) skewX(-6deg); }
-			to { transform: translate(-50%, 2px) skewX(6deg); }
-		}
-		@keyframes runner-move {
-			from { transform: translateY(-50%) translateX(-18px); }
-			to { transform: translateY(-50%) translateX(var(--runner-end-x)); }
-		}
-		@keyframes limb-swing {
-			from { transform: rotate(-12deg); }
-			to { transform: rotate(14deg); }
-		}
 		@keyframes countdown-shimmer {
 			0% { background-position: 0% 50%; }
 			100% { background-position: 200% 50%; }
@@ -331,6 +373,9 @@
 	<div class="scene">
 		<img class="scene__bg" src="./0done.jpg" alt="Festive scene with a Christmas tree" />
 		<button class="tree-star-hotspot" type="button" aria-label="Այս տարի միասնական ուժերով կվառենք տոնածառի լույսերը"></button>
+		<div class="tree-toy" role="img" aria-label="Christmas tree ornament">
+			<img src="./toys/mane.png" alt="Glass tree ornament" loading="lazy" />
+		</div>
 		<div class="progress" aria-live="polite">
 			<div class="progress__track">
 				<span class="progress__fill"></span>
@@ -364,15 +409,20 @@
 		const scene = document.querySelector(".scene");
 		const img = document.querySelector(".scene__bg");
 		const star = document.querySelector(".tree-star-hotspot");
+		const toy = document.querySelector(".tree-toy");
+		const toySprite = toy?.querySelector("img");
 		const track = document.querySelector(".progress__track");
 		const fill = document.querySelector(".progress__fill");
 		const runners = document.querySelectorAll(".progress__runner");
 		const progressLabel = document.querySelector(".progress__meta strong");
 		const audioPlayer = document.getElementById("bg-audio");
 		const AUDIO_PROMPT_CLASS = "needs-audio";
-		const PROGRESS_RATIO = 0;
+		const PROGRESS_RATIO = 0.08;
 		const STAR_X = 0.735;
 		const STAR_Y = 0.225;
+		const TOY_X = 0.35;
+		const TOY_Y = 0.8;
+		let toyWidthRatio;
 		const RUNNER_RESET = -18;
 		const RUNNER_AHEAD_OFFSET = 20;
 		const TARGET_DATE = Date.UTC(2025, 11, 31, 20, 0, 0, 0);
@@ -384,18 +434,31 @@
 		};
 		const formatTimeUnit = (value) => String(value).padStart(2, "0");
 
-		const updateStarPosition = () => {
-			if (!scene || !img || !star) return;
+		const updateAnchoredElements = () => {
+			if (!scene || !img || !img.naturalWidth || !img.naturalHeight) return;
 			const rect = scene.getBoundingClientRect();
 			const scale = Math.max(rect.width / img.naturalWidth, rect.height / img.naturalHeight);
 			const displayWidth = img.naturalWidth * scale;
 			const displayHeight = img.naturalHeight * scale;
 			const offsetX = (displayWidth - rect.width) / 2;
 			const offsetY = (displayHeight - rect.height) / 2;
-			const x = STAR_X * displayWidth - offsetX;
-			const y = STAR_Y * displayHeight - offsetY;
-			star.style.setProperty("--star-left", `${(x / rect.width) * 100}%`);
-			star.style.setProperty("--star-top", `${(y / rect.height) * 100}%`);
+			const anchor = (el, xRatio, yRatio, topVar, leftVar) => {
+				if (!el) return;
+				const x = xRatio * displayWidth - offsetX;
+				const y = yRatio * displayHeight - offsetY;
+				el.style.setProperty(leftVar, `${(x / rect.width) * 100}%`);
+				el.style.setProperty(topVar, `${(y / rect.height) * 100}%`);
+			};
+			anchor(star, STAR_X, STAR_Y, "--star-top", "--star-left");
+			anchor(toy, TOY_X, TOY_Y, "--toy-top", "--toy-left");
+			if (toy && displayWidth) {
+				if (!toyWidthRatio) {
+					const measuredWidth = toy.getBoundingClientRect().width;
+					if (measuredWidth > 0) toyWidthRatio = measuredWidth / displayWidth;
+				}
+				const ratio = toyWidthRatio || 0.08;
+				toy.style.setProperty("--toy-size", `${displayWidth * ratio}px`);
+			}
 		};
 
 		const updateProgressVisuals = () => {
@@ -454,10 +517,63 @@
 				});
 		};
 
+		let toySwingAnimation;
+		let toyRateTweenHandle;
+		const ensureToySwing = () => {
+			if (!toySprite || typeof toySprite.animate !== "function") return null;
+			if (!toySwingAnimation) {
+				toySwingAnimation = toySprite.animate(
+					[
+						{ transform: "rotate(-6deg)" },
+						{ transform: "rotate(6deg)" }
+					],
+					{
+						duration: 2000,
+						direction: "alternate",
+						easing: "ease-in-out",
+						iterations: Infinity,
+						fill: "both"
+					}
+				);
+			}
+			return toySwingAnimation;
+		};
+
+		const tweenToyRate = (targetRate = 1) => {
+			const animation = ensureToySwing();
+			if (!animation) return;
+			if (toyRateTweenHandle) cancelAnimationFrame(toyRateTweenHandle);
+			const startRate = animation.playbackRate || 1;
+			const startTime = performance.now();
+			const duration = 260;
+			const step = (now) => {
+				const progress = Math.min(1, (now - startTime) / duration);
+				const eased = progress * (2 - progress);
+				animation.playbackRate = startRate + (targetRate - startRate) * eased;
+				if (progress < 1) {
+					toyRateTweenHandle = requestAnimationFrame(step);
+				} else {
+					animation.playbackRate = targetRate;
+					toyRateTweenHandle = null;
+				}
+			};
+			toyRateTweenHandle = requestAnimationFrame(step);
+		};
+
+		const attachToyHoverEffects = () => {
+			if (!toy || !toySprite || typeof toySprite.animate !== "function") return;
+			ensureToySwing();
+			const accelerate = () => tweenToyRate(2.1);
+			const normalize = () => tweenToyRate(1);
+			toy.addEventListener("pointerenter", accelerate);
+			toy.addEventListener("pointerleave", normalize);
+		};
+
 		star?.addEventListener("click", () => playRandomSong(true));
+		attachToyHoverEffects();
 
 		const initializeScene = () => {
-			updateStarPosition();
+			updateAnchoredElements();
 			updateProgressVisuals();
 		};
 
@@ -471,6 +587,8 @@
 			countdownRefs.hours.textContent = formatTimeUnit(totalHours);
 			countdownRefs.minutes.textContent = formatTimeUnit(minutes);
 			countdownRefs.seconds.textContent = formatTimeUnit(seconds);
+
+
 
 			if (diffSeconds === 0) {
 				countdownRefs.wrapper.classList.add("countdown--arrived");
