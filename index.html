@@ -84,28 +84,28 @@
 			will-change: transform;
 			isolation: isolate;
 		}
-        .tree-toy::before {
-            content: "Թող որ գալիք տարում լինենք առավել հետաքրքրասեր, այն ապահովում է շարունակական զարգացում 🎄";
-            position: absolute;
-            bottom: 80%;
-            left: 50%;
-            transform: translate(-50%, 10%) scale(0.95);
-            padding: 0.45rem 0.9rem;
-            border-radius: 9px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 215, 150, 0.85));
-            color: #1a2750;
-            font-size: 0.85rem;
-            font-weight: 600;
-            letter-spacing: 0.01em;
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.35);
-            backdrop-filter: blur(6px);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease, transform 0.2s ease;
-            white-space: normal;
-            width: 320px;
-            text-align: center;
-        }
+		.tree-toy::before {
+			content: attr(data-hover-text);
+			position: absolute;
+			bottom: 80%;
+			left: 50%;
+			transform: translate(-50%, 10%) scale(0.95);
+			padding: 0.45rem 0.9rem;
+			border-radius: 9px;
+			background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 215, 150, 0.85));
+			color: #1a2750;
+			font-size: 0.85rem;
+			font-weight: 600;
+			letter-spacing: 0.01em;
+			box-shadow: 0 12px 25px rgba(0, 0, 0, 0.35);
+			backdrop-filter: blur(6px);
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity 0.2s ease, transform 0.2s ease;
+			white-space: normal;
+			width: 320px;
+			text-align: center;
+		}
 		.tree-toy:is(:hover, :focus-visible)::before {
 			opacity: 1;
 			transform: translate(-50%, -10%) scale(1);
@@ -373,9 +373,15 @@
 	<div class="scene">
 		<img class="scene__bg" src="./0done.jpg" alt="Festive scene with a Christmas tree" />
 		<button class="tree-star-hotspot" type="button" aria-label="Այս տարի միասնական ուժերով կվառենք տոնածառի լույսերը"></button>
-		<div class="tree-toy" role="img" aria-label="Christmas tree ornament">
+		<div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Թող որ գալիք տարում լինենք առավել հետաքրքրասեր, այն ապահովում է շարունակական զարգացում 🎄" data-x="0.35" data-y="0.8" data-size-ratio="0.08">
 			<img src="./toys/mane.png" alt="Glass tree ornament" loading="lazy" />
 		</div>
+        <div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Թող 2026 թվականը լինի նոր հնարավորությունների, անսպառ էներգիայի և մեծ ձեռքբերումների տարի ❤️✨️" data-x="0.5" data-y="0.5" data-size-ratio="0.08">
+            <img src="./toys/sofi.png" alt="Glass tree ornament" loading="lazy" />
+        </div>
+        <div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Ցանկանում եմ 2026-ը լինի խաղաղության, երջանկության և առողջության տարի💚" data-x="0.4" data-y="0.6" data-size-ratio="0.08">
+            <img src="./toys/valodya.png" alt="Glass tree ornament" loading="lazy" />
+        </div>
 		<div class="progress" aria-live="polite">
 			<div class="progress__track">
 				<span class="progress__fill"></span>
@@ -409,22 +415,20 @@
 		const scene = document.querySelector(".scene");
 		const img = document.querySelector(".scene__bg");
 		const star = document.querySelector(".tree-star-hotspot");
-		const toy = document.querySelector(".tree-toy");
-		const toySprite = toy?.querySelector("img");
+		const toys = Array.from(document.querySelectorAll(".tree-toy"));
 		const track = document.querySelector(".progress__track");
 		const fill = document.querySelector(".progress__fill");
 		const runners = document.querySelectorAll(".progress__runner");
 		const progressLabel = document.querySelector(".progress__meta strong");
 		const audioPlayer = document.getElementById("bg-audio");
 		const AUDIO_PROMPT_CLASS = "needs-audio";
-		const PROGRESS_RATIO = 0.08;
-		const STAR_X = 0.735;
-		const STAR_Y = 0.225;
-		const TOY_X = 0.35;
-		const TOY_Y = 0.8;
-		let toyWidthRatio;
+		const PROGRESS_RATIO = 0.24;
 		const RUNNER_RESET = -18;
 		const RUNNER_AHEAD_OFFSET = 20;
+		const STAR_X = 0.735;
+		const STAR_Y = 0.225;
+		const DEFAULT_TOY_RATIO = 0.08;
+		const toyWidthRatios = new WeakMap();
 		const TARGET_DATE = Date.UTC(2025, 11, 31, 20, 0, 0, 0);
 		const countdownRefs = {
 			wrapper: document.querySelector(".countdown"),
@@ -450,15 +454,27 @@
 				el.style.setProperty(topVar, `${(y / rect.height) * 100}%`);
 			};
 			anchor(star, STAR_X, STAR_Y, "--star-top", "--star-left");
-			anchor(toy, TOY_X, TOY_Y, "--toy-top", "--toy-left");
-			if (toy && displayWidth) {
-				if (!toyWidthRatio) {
-					const measuredWidth = toy.getBoundingClientRect().width;
-					if (measuredWidth > 0) toyWidthRatio = measuredWidth / displayWidth;
+			toys.forEach((toy) => {
+				const xRatio = Number.parseFloat(toy.dataset.x ?? "");
+				const yRatio = Number.parseFloat(toy.dataset.y ?? "");
+				const safeX = Number.isFinite(xRatio) ? xRatio : 0.5;
+				const safeY = Number.isFinite(yRatio) ? yRatio : 0.5;
+				anchor(toy, safeX, safeY, "--toy-top", "--toy-left");
+
+				let ratio = Number.parseFloat(toy.dataset.sizeRatio ?? "");
+				if (!Number.isFinite(ratio) || ratio <= 0) {
+					ratio = toyWidthRatios.get(toy);
+					if (!ratio) {
+						const measuredWidth = toy.getBoundingClientRect().width;
+						if (measuredWidth > 0 && displayWidth > 0) {
+							ratio = measuredWidth / displayWidth;
+							toyWidthRatios.set(toy, ratio);
+						}
+					}
 				}
-				const ratio = toyWidthRatio || 0.08;
-				toy.style.setProperty("--toy-size", `${displayWidth * ratio}px`);
-			}
+
+				toy.style.setProperty("--toy-size", `${displayWidth * (ratio || DEFAULT_TOY_RATIO)}px`);
+			});
 		};
 
 		const updateProgressVisuals = () => {
@@ -517,56 +533,63 @@
 				});
 		};
 
-		let toySwingAnimation;
-		let toyRateTweenHandle;
-		const ensureToySwing = () => {
-			if (!toySprite || typeof toySprite.animate !== "function") return null;
-			if (!toySwingAnimation) {
-				toySwingAnimation = toySprite.animate(
-					[
-						{ transform: "rotate(-6deg)" },
-						{ transform: "rotate(6deg)" }
-					],
-					{
-						duration: 2000,
-						direction: "alternate",
-						easing: "ease-in-out",
-						iterations: Infinity,
-						fill: "both"
-					}
-				);
-			}
-			return toySwingAnimation;
-		};
-
-		const tweenToyRate = (targetRate = 1) => {
-			const animation = ensureToySwing();
-			if (!animation) return;
-			if (toyRateTweenHandle) cancelAnimationFrame(toyRateTweenHandle);
-			const startRate = animation.playbackRate || 1;
-			const startTime = performance.now();
-			const duration = 260;
-			const step = (now) => {
-				const progress = Math.min(1, (now - startTime) / duration);
-				const eased = progress * (2 - progress);
-				animation.playbackRate = startRate + (targetRate - startRate) * eased;
-				if (progress < 1) {
-					toyRateTweenHandle = requestAnimationFrame(step);
-				} else {
-					animation.playbackRate = targetRate;
-					toyRateTweenHandle = null;
-				}
-			};
-			toyRateTweenHandle = requestAnimationFrame(step);
-		};
-
 		const attachToyHoverEffects = () => {
-			if (!toy || !toySprite || typeof toySprite.animate !== "function") return;
-			ensureToySwing();
-			const accelerate = () => tweenToyRate(2.1);
-			const normalize = () => tweenToyRate(1);
-			toy.addEventListener("pointerenter", accelerate);
-			toy.addEventListener("pointerleave", normalize);
+			toys.forEach((toy) => {
+				const toySprite = toy.querySelector("img");
+				if (!toySprite || typeof toySprite.animate !== "function") return;
+
+				let toySwingAnimation;
+				let toyRateTweenHandle;
+
+				const ensureToySwing = () => {
+					if (!toySwingAnimation) {
+						toySwingAnimation = toySprite.animate(
+							[
+								{ transform: "rotate(-6deg)" },
+								{ transform: "rotate(6deg)" }
+							],
+							{
+								duration: 2000,
+								direction: "alternate",
+								easing: "ease-in-out",
+								iterations: Infinity,
+								fill: "both"
+							}
+						);
+					}
+					return toySwingAnimation;
+				};
+
+				ensureToySwing();
+
+				const tweenToyRate = (targetRate = 1) => {
+					const animation = ensureToySwing();
+					if (!animation) return;
+					if (toyRateTweenHandle) cancelAnimationFrame(toyRateTweenHandle);
+
+					const startRate = animation.playbackRate || 1;
+					const startTime = performance.now();
+					const duration = 260;
+
+					const tick = (now) => {
+						const progress = Math.min(1, (now - startTime) / duration);
+						const eased = progress * (2 - progress);
+						animation.playbackRate = startRate + (targetRate - startRate) * eased;
+
+						if (progress < 1) {
+							toyRateTweenHandle = requestAnimationFrame(tick);
+						} else {
+							animation.playbackRate = targetRate;
+							toyRateTweenHandle = null;
+						}
+					};
+
+					toyRateTweenHandle = requestAnimationFrame(tick);
+				};
+
+				toy.addEventListener("pointerenter", () => tweenToyRate(2.1));
+				toy.addEventListener("pointerleave", () => tweenToyRate(1));
+			});
 		};
 
 		star?.addEventListener("click", () => playRandomSong(true));
