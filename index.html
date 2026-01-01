@@ -311,7 +311,7 @@
 			position: fixed;
 			left: 50%;
 			bottom: clamp(16px, 2vh, 64px);
-			transform: translateX(-50%);
+			transform: translateX(-50%) scale(1);
 			width: min(360px, 78vw);
 			padding: clamp(0.75rem, 1.5vw, 1.1rem) clamp(1rem, 3vw, 2rem);
 			border-radius: clamp(20px, 4vw, 30px);
@@ -319,9 +319,24 @@
 			backdrop-filter: blur(12px);
 			border: 3px solid rgba(255, 255, 255, 0.15);
 			box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), 0 0 38px rgba(255, 215, 0, 0.28);
-			display: flex;
+			display: inline-flex;
+			align-items: center;
 			justify-content: center;
 			z-index: 2;
+			cursor: pointer;
+			user-select: none;
+			transition: transform 0.35s ease, box-shadow 0.35s ease;
+		}
+		.countdown:hover {
+			transform: translateX(-50%) scale(1.02);
+			box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55), 0 0 48px rgba(255, 255, 255, 0.35);
+		}
+		.countdown:active {
+			transform: translateX(-50%) scale(0.98);
+		}
+		.countdown:focus-visible {
+			outline: 3px solid rgba(255, 255, 255, 0.65);
+			outline-offset: 6px;
 		}
 		.countdown::before {
 			content: "";
@@ -332,40 +347,86 @@
 			filter: blur(9px);
 			pointer-events: none;
 		}
-		.countdown__timer {
-			display: flex;
-			align-items: center;
+		.countdown__message {
 			font-family: "Aldrich", "Segoe UI", system-ui, sans-serif;
-			gap: clamp(0.35rem, 1.5vw, 1rem);
-		}
-		.countdown__value {
-			font-size: clamp(2rem, 6vw, 3.25rem);
+			font-size: clamp(2rem, 1vw, 3.5rem);
 			font-weight: 600;
 			line-height: 1;
+			letter-spacing: 0.04em;
 			background: linear-gradient(120deg, #fff6a9, #ffd66d, #fff);
 			-webkit-background-clip: text;
 			color: transparent;
 			text-shadow: 0 0 14px rgba(255, 196, 53, 0.75);
-			animation: countdown-shimmer 4s linear infinite;
-			min-width: 2ch;
-			text-align: center;
-		}
-		.countdown__separator {
-			font-size: clamp(1.5rem, 4vw, 3rem);
-			color: rgba(255, 255, 255, 0.55);
-			animation: countdown-glow 1.2s ease-in-out infinite alternate;
+			animation: greeting-shimmer 5s linear infinite, greeting-pulse 2.4s ease-in-out infinite alternate;
 		}
 		.countdown--arrived {
 			background: linear-gradient(120deg, rgba(255, 196, 53, 0.9), rgba(255, 115, 92, 0.9));
 			box-shadow: 0 20px 55px rgba(0, 0, 0, 0.5), 0 0 65px rgba(255, 255, 255, 0.5);
 		}
-		@keyframes countdown-shimmer {
+		.fireworks-layer {
+			position: fixed;
+			inset: 0;
+			pointer-events: none;
+			overflow: hidden;
+			z-index: 4;
+			opacity: 0;
+			transition: opacity 0.4s ease;
+		}
+		.fireworks-layer--active {
+			opacity: 1;
+		}
+		.firework {
+			position: absolute;
+			left: var(--firework-left, 50%);
+			top: var(--firework-top, 50%);
+			width: 8px;
+			height: 8px;
+			transform: translate(-50%, -50%);
+			color: hsl(var(--firework-hue, 45), 90%, 65%);
+			filter: drop-shadow(0 0 12px currentColor);
+			animation: firework-pop 1.6s ease-out forwards;
+		}
+		.firework::before,
+		.firework::after {
+			content: "";
+			position: absolute;
+			inset: 0;
+			border-radius: 50%;
+			background: currentColor;
+			box-shadow:
+				0 -44px 0 4px currentColor,
+				0 44px 0 4px currentColor,
+				44px 0 0 4px currentColor,
+				-44px 0 0 4px currentColor,
+				31px 31px 0 4px currentColor,
+				-31px 31px 0 4px currentColor,
+				31px -31px 0 4px currentColor,
+				-31px -31px 0 4px currentColor;
+			opacity: 0.95;
+			animation: firework-spark 1.8s ease-out forwards;
+			mix-blend-mode: screen;
+		}
+		.firework::after {
+			transform: scale(0.7);
+			opacity: 0.6;
+			animation-duration: 2.2s;
+		}
+		@keyframes greeting-shimmer {
 			0% { background-position: 0% 50%; }
 			100% { background-position: 200% 50%; }
 		}
-		@keyframes countdown-glow {
-			from { opacity: 0.4; }
-			to { opacity: 1; }
+		@keyframes greeting-pulse {
+			from { text-shadow: 0 0 10px rgba(255, 196, 53, 0.45); }
+			to { text-shadow: 0 0 22px rgba(255, 255, 255, 0.95); }
+		}
+		@keyframes firework-pop {
+			0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0.9; }
+			60% { opacity: 1; }
+			100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; }
+		}
+		@keyframes firework-spark {
+			0% { transform: scale(0); opacity: 1; }
+			100% { transform: scale(1.4); opacity: 0; }
 		}
 	</style>
 </head>
@@ -374,7 +435,7 @@
 	<div class="scene">
 		<img class="scene__bg" src="./0done.jpg" alt="Festive scene with a Christmas tree" />
 		<button class="tree-star-hotspot" type="button" aria-label="Այս տարի միասնական ուժերով կվառենք տոնածառի լույսերը"></button>
-		<div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Թող որ գալիք տարում լինենք առավել հետաքրքրասեր, այն ապահովում է շարունակական զարգացում 🎄" data-x="0.35" data-y="0.78" data-size-ratio="0.08" data-glow-color="#ffd97d" data-glow-intensity="0.8">
+		<div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Թող որ գալիք տարում լինենք առավել հետաքրքրասեր, այն ապահովում է շարունակական զարգացում 🎄" data-x="0.38" data-y="0.73" data-size-ratio="0.08" data-glow-color="#ffd97d" data-glow-intensity="0.8">
 			<span class="tree-toy__glow" aria-hidden="true"></span>
 			<img src="./toys/mane.png" alt="Glass tree ornament" loading="lazy" />
 		</div>
@@ -406,6 +467,10 @@
             <span class="tree-toy__glow" aria-hidden="true"></span>
             <img src="./toys/abo.png" alt="Glass tree ornament" loading="lazy" />
         </div>
+        <div class="tree-toy" role="img" aria-label="Christmas tree ornament" data-hover-text="Ամանորը հրաշքների ժամանակ է, կախարդանքներով լի հեքիաթ, նոր սկիզբ: Մաղթում եմ, որ այս նոր տարում ոչ միայն երազեք, այլև հստակ քայլերով շարժվեք դեպի նոր բացահայտումներ ու մեծ հաղթանակներ։" data-x="0.47" data-y="0.35" data-size-ratio="0.065" data-glow-color="#33f2fe" data-glow-intensity="0.8">
+            <span class="tree-toy__glow" aria-hidden="true"></span>
+            <img src="./toys/vahe.png" alt="Glass tree ornament" loading="lazy" />
+        </div>
 		<div class="progress" aria-live="polite">
 			<div class="progress__track">
 				<span class="progress__fill"></span>
@@ -415,14 +480,8 @@
 			</div>
 		</div>
 	</div>
-	<div class="countdown" role="timer" aria-label="Countdown to January 1, 2026">
-		<div class="countdown__timer" aria-live="polite">
-			<span class="countdown__value" data-part="hours">00</span>
-			<span class="countdown__separator">:</span>
-			<span class="countdown__value" data-part="minutes">00</span>
-			<span class="countdown__separator">:</span>
-			<span class="countdown__value" data-part="seconds">00</span>
-		</div>
+	<div class="countdown" role="button" tabindex="0" data-fireworks-trigger aria-label="Սեղմեք՝ տեսնելու տոնական հրավառությունը">
+		<span class="countdown__message">Շնորհավոր 2026</span>
 	</div>
 	<audio id="bg-audio" preload="auto">
 		<source src="./songs/song1.mp3" type="audio/mpeg" />
@@ -445,8 +504,9 @@
 		const runners = document.querySelectorAll(".progress__runner");
 		const progressLabel = document.querySelector(".progress__meta strong");
 		const audioPlayer = document.getElementById("bg-audio");
+		const fireworksTrigger = document.querySelector("[data-fireworks-trigger]");
 		const AUDIO_PROMPT_CLASS = "needs-audio";
-		const PROGRESS_RATIO = 0.66;
+		const PROGRESS_RATIO = 0.74;
 		const RUNNER_RESET = -18;
 		const RUNNER_AHEAD_OFFSET = 20;
 		const STAR_X = 0.735;
@@ -455,14 +515,12 @@
 		const toyWidthRatios = new WeakMap();
 		const MIN_GLOW_INTENSITY = 0.15;
 		const MAX_GLOW_INTENSITY = 0.85;
-		const TARGET_DATE = Date.UTC(2025, 11, 31, 20, 0, 0, 0);
-		const countdownRefs = {
-			wrapper: document.querySelector(".countdown"),
-			hours: document.querySelector('[data-part="hours"]'),
-			minutes: document.querySelector('[data-part="minutes"]'),
-			seconds: document.querySelector('[data-part="seconds"]')
-		};
-		const formatTimeUnit = (value) => String(value).padStart(2, "0");
+		const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+		const FIREWORKS_DURATION = 8000;
+		const FIREWORKS_INTERVAL = 220;
+		let fireworksLayer;
+		let fireworksIntervalId;
+		let fireworksTimeoutId;
 
 		const updateAnchoredElements = () => {
 			if (!scene || !img || !img.naturalWidth || !img.naturalHeight) return;
@@ -504,6 +562,7 @@
 			});
 		};
 		const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+		const randomBetween = (min, max) => Math.random() * (max - min) + min;
 		const hexToRgb = (hex) => {
 			const normalized = hex?.trim().replace(/^#/, "");
 			if (!normalized || !/^[0-9a-f]{3}([0-9a-f]{3})?$/i.test(normalized)) return null;
@@ -656,34 +715,62 @@
 			});
 		};
 
+		const ensureFireworksLayer = () => {
+			if (fireworksLayer) return fireworksLayer;
+			fireworksLayer = document.createElement("div");
+			fireworksLayer.className = "fireworks-layer";
+			document.body.appendChild(fireworksLayer);
+			return fireworksLayer;
+		};
+
+		const spawnFirework = () => {
+			const layer = ensureFireworksLayer();
+			const firework = document.createElement("span");
+			firework.className = "firework";
+			firework.style.setProperty("--firework-left", `${randomBetween(5, 95)}%`);
+			firework.style.setProperty("--firework-top", `${randomBetween(10, 80)}%`);
+			firework.style.setProperty("--firework-hue", `${Math.floor(Math.random() * 360)}`);
+			layer.appendChild(firework);
+			firework.addEventListener("animationend", () => firework.remove(), { once: true });
+		};
+
+		const launchFireworksShow = () => {
+			if (!fireworksTrigger || prefersReducedMotion.matches) return;
+			const layer = ensureFireworksLayer();
+			layer.classList.add("fireworks-layer--active");
+			fireworksTrigger.classList.add("countdown--arrived");
+
+			if (fireworksIntervalId) clearInterval(fireworksIntervalId);
+			if (fireworksTimeoutId) clearTimeout(fireworksTimeoutId);
+
+			const launchBurst = () => {
+				Array.from({ length: 3 + Math.floor(Math.random() * 3) }).forEach(spawnFirework);
+			};
+
+			launchBurst();
+			fireworksIntervalId = setInterval(launchBurst, FIREWORKS_INTERVAL);
+			fireworksTimeoutId = setTimeout(() => {
+				clearInterval(fireworksIntervalId);
+				fireworksIntervalId = null;
+				layer.classList.remove("fireworks-layer--active");
+				fireworksTrigger.classList.remove("countdown--arrived");
+			}, FIREWORKS_DURATION);
+		};
+
+		const handleFireworksInteraction = (event) => {
+			if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
+			event.preventDefault();
+			launchFireworksShow();
+		};
+
 		star?.addEventListener("click", () => playRandomSong(true));
 		attachToyHoverEffects();
+		fireworksTrigger?.addEventListener("click", handleFireworksInteraction);
+		fireworksTrigger?.addEventListener("keydown", handleFireworksInteraction);
 
 		const initializeScene = () => {
 			updateAnchoredElements();
 			updateProgressVisuals();
-		};
-
-		const updateCountdownTimer = () => {
-			if (!countdownRefs.wrapper) return true;
-			const diffSeconds = Math.max(0, Math.floor((TARGET_DATE - Date.now()) / 1000));
-			const totalHours = Math.floor(diffSeconds / 3600);
-			const minutes = Math.floor((diffSeconds % 3600) / 60);
-			const seconds = diffSeconds % 60;
-
-			countdownRefs.hours.textContent = formatTimeUnit(totalHours);
-			countdownRefs.minutes.textContent = formatTimeUnit(minutes);
-			countdownRefs.seconds.textContent = formatTimeUnit(seconds);
-
-
-
-			if (diffSeconds === 0) {
-				countdownRefs.wrapper.classList.add("countdown--arrived");
-				return true;
-			}
-
-			countdownRefs.wrapper.classList.remove("countdown--arrived");
-			return false;
 		};
 
 		if (img.complete) {
@@ -694,11 +781,6 @@
 
 		window.addEventListener("resize", initializeScene);
 		window.addEventListener("load", () => playRandomSong());
-
-		updateCountdownTimer();
-		const countdownInterval = setInterval(() => {
-			if (updateCountdownTimer()) clearInterval(countdownInterval);
-		}, 1000);
 	</script>
 </body>
 </html>
